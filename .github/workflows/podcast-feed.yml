@@ -26,7 +26,7 @@ jobs:
         run: pip install feedparser requests
 
       - name: Generate combined podcast feed
-        run: python scripts/build_feed.py
+        run: python ./build_feed.py
 
       - name: Commit and push feed
         run: |
