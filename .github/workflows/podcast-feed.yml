@@ -1,0 +1,37 @@
+name: Generate Weekly Podcast Feed
+
+on:
+  schedule:
+    # 2 AM MST (Denver, UTC-7) every Friday = 12:00 UTC
+    - cron: '0 9 * * 5'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  build-feed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install feedparser requests
+
+      - name: Generate combined podcast feed
+        run: python scripts/build_feed.py
+
+      - name: Commit and push feed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add feed/podcast-feed.xml
+          git diff --cached --quiet && echo "No changes to commit" || \
+            (git commit -m "Update weekly podcast feed - $(date -u +%Y-%m-%dT%H:%M:%SZ)" && git push)
